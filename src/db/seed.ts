@@ -1,8 +1,27 @@
-import { db } from './index';
-import { meals } from './schema';
+import { db } from './index.ts';
+import { meals, reviews } from './schema.ts';
 import { sql } from 'drizzle-orm';
 
+const mockReviews = [
+  {
+    name: "John D.",
+    text: "The meals are absolutely fantastic! The high protein options helped me hit my macros perfectly.",
+    stars: 5,
+  },
+  {
+    name: "Sarah M.",
+    text: "Very convenient and tasty. The delivery was slightly late but the food makes up for it.",
+    stars: 4,
+  },
+  {
+    name: "Mike T.",
+    text: "Best meal prep service I've tried. The Grilled Chicken Quinoa is my favorite.",
+    stars: 5,
+  }
+];
+
 const mockMeals = [
+
   {
     name: "Grilled Chicken Quinoa Power Bowl",
     category: "High Protein Meals",
@@ -186,11 +205,15 @@ const mockMeals = [
 ];
 
 async function seed() {
-  console.log("Emptying meals table...");
+  console.log("Emptying tables...");
   await db.delete(meals);
+  await db.delete(reviews);
   
   console.log(`Inserting ${mockMeals.length} meals...`);
   await db.insert(meals).values(mockMeals);
+  
+  console.log(`Inserting ${mockReviews.length} reviews...`);
+  await db.insert(reviews).values(mockReviews);
   
   console.log("Seeding complete!");
   process.exit(0);

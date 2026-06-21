@@ -6,25 +6,40 @@ import dotenv from "dotenv";
 dotenv.config({ override: true });
 
 export const createPool = () => {
-  if (process.env.DATABASE_URL) {
-    return new Pool({
-      connectionString: process.env.DATABASE_URL,
-      connectionTimeoutMillis: 15000,
-    });
-  }
-  return new Pool({
-    host: process.env.SQL_HOST,
-    user: process.env.SQL_USER,
-    password: process.env.SQL_PASSWORD,
-    database: process.env.SQL_DB_NAME,
-    connectionTimeoutMillis: 15000,
+  const poolConfig = process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        connectionTimeoutMillis: 15000,
+        idleTimeoutMillis: 30000,
+        max: 20,
+      }
+    : {
+        host: process.env.SQL_HOST,
+        user: process.env.SQL_USER,
+        password: process.env.SQL_PASSWORD,
+        database: process.env.SQL_DB_NAME,
+        connectionTimeoutMillis: 15000,
+        idleTimeoutMillis: 30000,
+        max: 20,
+      };
+
+  const newPool = new Pool(poolConfig);
+
+  newPool.on('connect', (client) => {
+    console.log('Database pool: New client connected');
   });
+
+  newPool.on('error', (err, client) => {
+    console.error('Database pool: Unexpected error on idle client:', err);
+  });
+
+  newPool.on('remove', (client) => {
+    console.log('Database pool: Client removed from pool');
+  });
+
+  return newPool;
 };
 
 const pool = createPool();
-
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle SQL pool client:', err);
-});
 
 export const db = drizzle(pool, { schema });

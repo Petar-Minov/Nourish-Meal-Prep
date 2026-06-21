@@ -11,12 +11,18 @@ import { requireAuth, AuthRequest } from "./src/middleware/auth.ts";
 import { eq, desc } from "drizzle-orm"; // Need desc from drizzle-orm
 
 async function startServer() {
-  const app = express();
-  const PORT = 3000;
+  try {
+    const app = express();
+    const PORT = 3000;
 
-  app.use(express.json());
+    app.use(express.json());
 
-  // === PUBLIC ROUTES ===
+    // Health check endpoint for monitoring
+    app.get("/health", (req, res) => {
+      res.json({ status: "ok" });
+    });
+
+    // === PUBLIC ROUTES ===
   
   // Get all meals
   app.get("/api/meals", async (req, res) => {
@@ -180,9 +186,22 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
+  const server = app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+
+    server.on('error', (error) => {
+      console.error('Express server error:', error);
+    });
+
+  } catch (error) {
+    console.error("Critical error during server startup:", error);
+    process.exit(1);
+  }
 }
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
 
 startServer();
