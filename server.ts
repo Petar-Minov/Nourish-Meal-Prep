@@ -8,13 +8,18 @@ dotenv.config({ override: true });
 import { db } from "./src/db/index.ts";
 import { meals, orders, reviews } from "./src/db/schema.ts";
 import { requireAuth, AuthRequest } from "./src/middleware/auth.ts";
-import { eq, desc } from "drizzle-orm"; // Need desc from drizzle-orm
+import { eq, desc } from "drizzle-orm";
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   app.use(express.json());
+
+  // Health check endpoint
+  app.get("/health", (req, res) => {
+    res.json({ status: "ok" });
+  });
 
   // === PUBLIC ROUTES ===
   
@@ -50,7 +55,7 @@ async function startServer() {
         customerName,
         email,
         items,
-        totalPrice: totalPrice.toString(), // numeric column expects string format or number, string is safer
+        totalPrice: totalPrice.toString(),
       }).returning();
       res.json(newOrder[0]);
     } catch (error) {
@@ -180,9 +185,23 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
+  });
+
+  // Graceful error handling
+  server.on('error', (error) => {
+    console.error('Server error:', error);
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   });
 }
 
-startServer();
+startServer().catch((error) => {
+  console.error("Failed to start server:", error);
+  process.exit(1);
+});
+
