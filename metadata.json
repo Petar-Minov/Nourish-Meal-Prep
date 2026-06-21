@@ -1,0 +1,6 @@
+{
+  "name": "Nourish Meal Prep",
+  "description": "Healthy meal delivery application featuring public ordering and admin management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
