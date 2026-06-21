@@ -9,7 +9,8 @@
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit || true"
+    "lint": "tsc --noEmit || true",
+    "migrate": "tsx migrate.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -41,3 +42,4 @@
     "vite": "^6.2.3"
   }
 }
+
